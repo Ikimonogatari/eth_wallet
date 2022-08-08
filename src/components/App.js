@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import daiLogo from '../dai-logo.png';
 import './App.css';
 import Web3 from 'web3';
-import DaiTokenMock from '../abis/DaiTokenMock.json'
+import OnlyToken from '../abis/OnlyToken.json'
 
 class App extends Component {
   async componentWillMount() {
@@ -27,25 +26,27 @@ class App extends Component {
     const web3 = window.web3
     const accounts = await web3.eth.getAccounts()
     this.setState({ account: accounts[0] })
-    const daiTokenAddress = "0x7b729B07EcBDEd8879Acf997aAF6546926982830" // Replace DAI Address Here
-    const daiTokenMock = new web3.eth.Contract(DaiTokenMock.abi, daiTokenAddress)
-    this.setState({ daiTokenMock: daiTokenMock })
-    const balance = await daiTokenMock.methods.balanceOf(this.state.account).call()
+    const onlyTokenAddress = "0xdB295D6F4752c1A6e62dE31A92f655859375c79f" // Replace token Address Here
+    const onlyToken = new web3.eth.Contract(OnlyToken.abi, onlyTokenAddress)
+    this.setState({ onlyToken: onlyToken })
+    const balance = await onlyToken.methods.balanceOf(this.state.account).call()
     this.setState({ balance: web3.utils.fromWei(balance.toString(), 'Ether') })
-    const transactions = await daiTokenMock.getPastEvents('Transfer', { fromBlock: 0, toBlock: 'latest', filter: { from: this.state.account } })
+    const transactions = await onlyToken.getPastEvents('Transfer', { fromBlock: 0, toBlock: 'latest', filter: { from: this.state.account } })
     this.setState({ transactions: transactions })
     console.log(transactions)
   }
 
   transfer(recipient, amount) {
-    this.state.daiTokenMock.methods.transfer(recipient, amount).send({ from: this.state.account })
+    this.state.onlyToken.methods.transfer(recipient, amount).send({ from: this.state.account })
   }
+
+  
 
   constructor(props) {
     super(props)
     this.state = {
       account: '',
-      daiTokenMock: null,
+      onlyToken: null,
       balance: 0,
       transactions: []
     }
@@ -57,27 +58,15 @@ class App extends Component {
     return (
       <div>
         <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-          <a
-            className="navbar-brand col-sm-3 col-md-2 mr-0"
-            href="http://www.dappuniversity.com/bootcamp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Dapp University
-          </a>
+          <p>
+            OnlyTokens
+          </p>
         </nav>
         <div className="container-fluid mt-5">
           <div className="row">
             <main role="main" className="col-lg-12 d-flex text-center">
               <div className="content mr-auto ml-auto" style={{ width: "500px" }}>
-                <a
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img src={daiLogo} width="150" />
-                </a>
-                <h1>{this.state.balance} DAI</h1>
+                <h1>{this.state.balance} OTK</h1>
                 <form onSubmit={(event) => {
                   event.preventDefault()
                   const recipient = this.recipient.value
@@ -104,24 +93,6 @@ class App extends Component {
                   </div>
                   <button type="submit" className="btn btn-primary btn-block">Send</button>
                 </form>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Recipient</th>
-                      <th scope="col">value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    { this.state.transactions.map((tx, key) => {
-                      return (
-                        <tr key={key} >
-                          <td>{tx.returnValues.to}</td>
-                          <td>{window.web3.utils.fromWei(tx.returnValues.value.toString(), 'Ether')}</td>
-                        </tr>
-                      )
-                    }) }
-                  </tbody>
-                </table>
               </div>
             </main>
           </div>
